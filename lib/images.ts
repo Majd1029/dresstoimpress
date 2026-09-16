@@ -1,0 +1,1 @@
+export function imageSet(src?:string){if(!src)return undefined;try{const url=new URL(src);if(!['images.unsplash.com','images.pexels.com'].includes(url.hostname))return undefined;return [400,800,1200,1800].map(w=>{const next=new URL(url);next.searchParams.set('w',String(w));next.searchParams.set('q','82');return next.href+' '+w+'w'}).join(', ')}catch{return undefined}}

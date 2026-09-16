@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1789380120238,
+      "tag": "0000_futuristic_silk_fever",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789382023582,
+      "tag": "0001_silky_mastermind",
+      "breakpoints": true
+    }
+  ]
+}
