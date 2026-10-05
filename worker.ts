@@ -1,5 +1,6 @@
 import handler from 'vinext/server/fetch-handler';
 import {previewGate} from './lib/preview-gate';
+export {PasswordKdf} from './lib/password-worker';
 
 export default {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext) {

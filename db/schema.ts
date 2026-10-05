@@ -1,4 +1,4 @@
-import {sqliteTable,text,integer,uniqueIndex,index,check} from 'drizzle-orm/sqlite-core';
+import {sqliteTable,text,integer,blob,primaryKey,uniqueIndex,index,check} from 'drizzle-orm/sqlite-core';
 import {sql} from 'drizzle-orm';
 const id=()=>text('id').primaryKey(); const stamp=()=>text('created_at').notNull().default(sql`CURRENT_TIMESTAMP`);
 export const users=sqliteTable('users',{id:id(),email:text('email').notNull().unique(),name:text('name').notNull(),passwordHash:text('password_hash').notNull(),role:text('role').notNull().default('customer'),createdAt:stamp()});
@@ -24,5 +24,26 @@ export const siteSettings=sqliteTable('site_settings',{id:text('id').primaryKey(
 export const homepageContent=sqliteTable('homepage_content',{id:text('id').primaryKey(),data:text('data').notNull(),updatedAt:text('updated_at').notNull().default('')});
 export const stripeEvents=sqliteTable('stripe_events',{id:id(),createdAt:stamp()});
 export const emailOutbox=sqliteTable('email_outbox',{id:id(),dedupeKey:text('dedupe_key').notNull().unique(),recipient:text('recipient').notNull(),subject:text('subject').notNull(),body:text('body').notNull(),status:text('status').notNull().default('pending'),attempts:integer('attempts').notNull().default(0),createdAt:stamp()});
+
+// Media is independent of product references, so unused original uploads survive migration.
+// Reservation/release and immutable-object triggers live in 0002_d1_media.sql.
+export const mediaStorage=sqliteTable('media_storage',{
+ id:integer('id').primaryKey(),usedBytes:integer('used_bytes').notNull().default(0),
+},t=>[check('media_storage_singleton',sql`${t.id}=1`),check('media_storage_budget',sql`${t.usedBytes}>=0 AND ${t.usedBytes}<=104857600`)]);
+export const mediaObjects=sqliteTable('media_objects',{
+ key:text('key').primaryKey(),byteLength:integer('byte_length').notNull(),chunkCount:integer('chunk_count').notNull(),
+ sha256:text('sha256').notNull(),httpMetadata:text('http_metadata').notNull(),customMetadata:text('custom_metadata').notNull(),
+ uploaded:text('uploaded').notNull(),sourceEtag:text('source_etag'),storageBytes:integer('storage_bytes').notNull(),
+},t=>[
+ check('media_key_size',sql`length(CAST(${t.key} AS BLOB)) BETWEEN 1 AND 1024`),
+ check('media_object_size',sql`${t.byteLength} BETWEEN 0 AND 5242880 AND ${t.chunkCount}=(${t.byteLength}+131071)/131072`),
+ check('media_hash_size',sql`length(${t.sha256})=64`),
+ check('media_metadata_valid',sql`json_valid(${t.httpMetadata}) AND json_valid(${t.customMetadata}) AND length(CAST(${t.httpMetadata} AS BLOB))+length(CAST(${t.customMetadata} AS BLOB))<=32768`),
+ check('media_storage_accounting',sql`${t.storageBytes}=${t.byteLength}+length(CAST(${t.key} AS BLOB))*(1+${t.chunkCount}*2)+length(CAST(${t.httpMetadata} AS BLOB))+length(CAST(${t.customMetadata} AS BLOB))+length(CAST(coalesce(${t.sourceEtag},'') AS BLOB))+4096+${t.chunkCount}*128`),
+]);
+export const mediaChunks=sqliteTable('media_chunks',{
+ objectKey:text('object_key').notNull().references(()=>mediaObjects.key,{onDelete:'cascade'}),
+ position:integer('position').notNull(),data:blob('data',{mode:'buffer'}).notNull(),
+},t=>[primaryKey({columns:[t.objectKey,t.position]}),check('media_chunk_size',sql`typeof(${t.data})='blob' AND length(${t.data}) BETWEEN 1 AND 131072`),check('media_chunk_position',sql`${t.position} BETWEEN 0 AND 39`)]);
 
 

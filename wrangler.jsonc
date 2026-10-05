@@ -8,13 +8,13 @@
   "workers_dev": false,
   "preview_urls": false,
   "assets": {"binding": "ASSETS", "run_worker_first": true},
+  "durable_objects": {"bindings": [{"name": "PASSWORD_KDF", "class_name": "PasswordKdf"}]},
+  "migrations": [{"tag": "v1-password-kdf", "new_sqlite_classes": ["PasswordKdf"]}],
   "vars": {"APP_URL": "http://localhost:5173", "SITE_VISIBILITY": "private"},
   "d1_databases": [{
     "binding": "DB",
     "database_name": "dresstoimpress-db",
     "database_id": "00000000-0000-4000-8000-000000000000",
     "migrations_dir": ".migration/schema"
-  }],
-  // Emulated locally; enabling real R2 requires a separate billing decision.
-  "r2_buckets": [{"binding": "BUCKET", "bucket_name": "dresstoimpress-media"}]
+  }]
 }

@@ -1,11 +1,10 @@
 {
-  "ownerEmail": "dresssstoooo@gmail.com",
+  "ownerEmail": "majdaguir29@gmail.com",
   "githubRepository": "Majd1029/dresstoimpress",
   "accountId": "",
   "databaseId": "",
-  "bucketName": "dresstoimpress-media",
+  "mediaStorage": "d1",
   "appUrl": "",
   "freePlanVerified": false,
-  "r2BillingApproved": false,
   "sourceDataVerified": false
 }

@@ -10,14 +10,14 @@ The initial collection is explicitly **demo content**. Instagram could not be ac
 - Owner dashboard at `/admin`: products, image upload/reordering/alt text, variants, stock thresholds, categories, orders, customers, subscribers, homepage content and settings.
 - Relational D1 (SQLite) database with Drizzle schemas/migrations, foreign keys, uniqueness/check constraints, and transactional stock triggers.
 - Opaque server-stored sessions, salted scrypt password hashes, CSRF/origin checks, database-backed throttling, role checks and customer ownership checks.
-- R2 image storage; database stores image references only.
+- Bounded D1 image storage: 1 MiB per new upload and a 100 MiB media budget. Original object imports support up to 5 MiB each; the complete source bucket inventory contained no objects.
 - Server-priced Stripe Checkout, signed raw-body webhook verification, idempotent order confirmation, expiry recovery, refunds, and durable email outbox.
 - Responsive layouts, semantic landmarks, focus states, accessible Radix controls, reduced motion, page metadata, product social metadata, sitemap and robots.
 - A read-only WebMCP catalog search tool with input validation.
 
 ## Technology and project layout
 
-The application uses TypeScript, React, Next.js App Router APIs through the Vinext Cloudflare adapter, Tailwind CSS, Drizzle, Cloudflare D1 and R2. The backend is prepared to run directly in the owner's Cloudflare account; the migration is not yet complete. It uses relational SQLite rather than PostgreSQL. Vinext is a pre-1.0 adapter; run deployment/load checks for the intended production environment before accepting real payments.
+The application uses TypeScript, React, Next.js App Router APIs through the Vinext Cloudflare adapter, Tailwind CSS, Drizzle, Cloudflare D1 and a private SQLite-backed Durable Object for password hashing. The backend runs in the owner's personal Cloudflare Free account at https://dresstoimpress.majdaguir29.workers.dev in private preview. Data migration is verified; old-resource retirement is pending. It uses relational SQLite rather than PostgreSQL. Vinext is a pre-1.0 adapter; run deployment/load checks for the intended production environment before accepting real payments.
 
 ```text
 app/                     Server-rendered routes, metadata, API, error boundaries

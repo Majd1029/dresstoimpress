@@ -42,6 +42,9 @@
   ],
   "exclude": [
     "node_modules",
+    ".migration",
+    ".sites-runtime",
+    "dist",
     "examples"
   ]
 }

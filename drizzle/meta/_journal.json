@@ -15,6 +15,13 @@
       "when": 1789382023582,
       "tag": "0001_silky_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789559569331,
+      "tag": "0002_d1_media",
+      "breakpoints": true
     }
   ]
 }

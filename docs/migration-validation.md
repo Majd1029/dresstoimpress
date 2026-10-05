@@ -1,19 +1,16 @@
-# Personal deployment preparation: verification
+# Personal migration validation — 2026-10-05
 
-Checked locally on 2026-09-16. Production migration is still pending.
+The personal Cloudflare deployment is live in private preview at https://dresstoimpress.majdaguir29.workers.dev. Workers Free was confirmed and no paid subscription was enabled.
 
-- TypeScript type checking passed.
-- The complete Vinext/Cloudflare production build passed.
-- A separate local D1 database accepted both normalized migrations.
-- Compiled Worker smoke test: homepage 200, all 14 referenced CSS/JavaScript assets 200, catalog with eight demo products 200, anonymous admin API denied with 403, foreign-origin mutation denied with 403.
-- Tests confirm private preview fails closed when credentials are missing, rejects the wrong secret, and only allows public access when explicitly configured.
-- Fresh catalog initialization stays below the Workers Free D1 query limit, creates eight products and 40 variants, and preserves existing stock on repeated initialization.
-- Migration tests confirm all five triggers, atomic stock reservation, overselling prevention, repeated release handling and purchased-cart updates.
-- Payment event tests pass for refund-before-completion, event replay, amount mismatch and unpaid deferral using isolated fixtures, with no real payment requests.
-- A heuristic current-source audit found no matches for known local setup credentials, common credential patterns or former company deployment identifiers. Private state, tokens, exports and personal resource IDs are excluded from the public tree. This scan does not prove that every possible unknown secret is absent.
+- Restored and compared the complete source database: 24 tables and 135 rows in the final read-only snapshot. Compared every value using SQLite type-aware byte representations, preserved schema/indexes/triggers, and ran foreign_key_check.
+- Intentional credential changes: personal administrator email/password, invalidated session tokens/CSRF/expiry, and fresh personal Worker secrets. Source backups retain the original state privately.
+- Complete paginated source R2 inventory: zero objects. Existing external image references retained.
+- Production smoke checks passed: private gate denies anonymous access, homepage/catalog/session, admin authentication/dashboard, cart, demo order creation/receipt, and a 1 MiB upload downloaded byte-for-byte.
+- Smoke data was removed. The stock unit reserved by demo checkout was restored before final comparison. Extra smoke sessions were removed.
+- Full required checks passed: TypeScript, production build, migration triggers/stock atomicity, free-plan seeding, private gate, payment webhook edge cases, D1 media limits/concurrency/rollback, and password compatibility through private SQLite Durable Object RPC.
+- Current-tree audit found no known local secrets, company deployment bindings, private exports or common credential patterns in publishable files. This is a heuristic scan, not proof against every unknown secret.
+- Old source is frozen read-only. Temporary export credential was removed and that removal redeployed. Old hosting/repository/storage deletion is still pending owner cleanup.
 
-The smoke test found and fixed missing static-asset forwarding behind the private preview gate. Both an ASSETS binding and explicit Worker forwarding are required when all requests run through the Worker first.
+Private evidence is in ignored `.migration/database-verification.json`, `.migration/final-verification.json`, `.migration/source-object-inventory.json`, and `.migration/live-smoke.json`.
 
-Still unverified: actual Workers Free CPU usage for password hashing and page rendering, large admin operations, full production D1 export/restore, complete R2 inventory/copy, cloud-hosted private access, independent admin login, real email and payment integrations, and source retirement. Existing catalog rows use external demo photography; that does not prove the source R2 bucket is empty.
-
-No company-hosted resource was changed or deleted by this preparation. No paid subscription was activated.
+Limits: no real payment/email integration, no high-load test, no complete account-member/recovery-device audit, and no confirmation of provider-side repository/data deletion. Public release is not enabled. Future changes must remain within Workers/D1/Durable Objects Free quotas.
