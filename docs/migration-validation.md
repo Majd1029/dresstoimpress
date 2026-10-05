@@ -9,7 +9,7 @@ The personal Cloudflare deployment is live in private preview at https://dressto
 - Smoke data was removed. The stock unit reserved by demo checkout was restored before final comparison. Extra smoke sessions were removed.
 - Full required checks passed: TypeScript, production build, migration triggers/stock atomicity, free-plan seeding, private gate, payment webhook edge cases, D1 media limits/concurrency/rollback, and password compatibility through private SQLite Durable Object RPC.
 - Current-tree audit found no known local secrets, company deployment bindings, private exports or common credential patterns in publishable files. This is a heuristic scan, not proof against every unknown secret.
-- Old source is frozen read-only. Temporary export credential was removed and that removal redeployed. Old hosting/repository/storage deletion is still pending owner cleanup.
+- Old source is frozen read-only. Temporary export credential was revoked, redeployed, and verified to return HTTP 401. Old hosting/repository/storage deletion is still pending owner cleanup.
 
 Private evidence is in ignored `.migration/database-verification.json`, `.migration/final-verification.json`, `.migration/source-object-inventory.json`, and `.migration/live-smoke.json`.
 

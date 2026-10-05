@@ -12,7 +12,7 @@ The store now runs privately at https://dresstoimpress.majdaguir29.workers.dev u
 - [x] Rotated the copied administrator password, changed its email to the personal identity, revoked copied sessions/reset tokens, and generated new personal Worker secrets. These are the only intentional differences from the preserved source records.
 - [x] Deployed privately and tested the storefront, catalog, administrator login/dashboard, 1 MiB upload with byte-exact download, cart and demo checkout. Removed test data and restored test inventory.
 - [x] Passed TypeScript, production build, migration/stock, free-plan seeding, preview gate, payment events, D1 media and password-derivation tests.
-- [x] Removed the temporary export secret from the old deployment and redeployed. The old deployment remains read-only; it has not been deleted.
+- [x] Revoked the temporary export secret, redeployed, and verified the old credential returns HTTP 401. The old deployment remains read-only; it has not been deleted.
 
 ## Personal access and updates
 
@@ -30,4 +30,4 @@ The store now runs privately at https://dresstoimpress.majdaguir29.workers.dev u
 - [ ] Keep the private source backups and verification reports in storage you personally own. This checkout is inside OneDrive; confirm that OneDrive account is personal before retaining credentials/backups there.
 - [ ] Follow the separate private retirement checklist to delete the old Site and confirm removal of its managed repository, D1/R2 resources, secrets and retained access. Deletion has not been performed.
 
-Do not apply initial CREATE TABLE migrations to the restored database. Original migrations were restored as schema, and the new media migration was applied separately. Before using automatic migration application, reconcile its migration ledger to this existing schema; never blindly replay the initial migrations.
+The restored schema and added media schema were checked before recording migrations 0000, 0001 and 0002 in the personal D1 migration ledger. Future migration application should append new migrations; never replay or modify the original applied SQL.
