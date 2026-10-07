@@ -12,7 +12,7 @@
     "start": "node --import ./scripts/local-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "db:prepare": "node scripts/prepare-migrations.mjs",
     "db:local": "node --import ./scripts/local-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 migrations apply DB --local --persist-to .wrangler/state",
-    "check": "tsc --noEmit && node tests/migration-package.mjs && node tests/seed-free-plan.mjs && node tests/preview-gate.mjs && node tests/payment-events.mjs && node tests/d1-media.mjs && node tests/password-kdf.mjs",
+    "check": "tsc --noEmit && node tests/migration-package.mjs && node tests/seed-free-plan.mjs && node tests/preview-gate.mjs && node tests/payment-events.mjs && node tests/cod.mjs && node tests/d1-media.mjs && node tests/password-kdf.mjs",
     "deploy:personal": "node scripts/deploy-personal.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"

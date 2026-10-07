@@ -1,3 +1,4 @@
+import {confirmCod} from './cod';
 import {money} from './types';
 import 'server-only';
 import {createHmac,timingSafeEqual} from 'node:crypto';
@@ -17,7 +18,7 @@ export async function changeCart(sessionId:string,variantId:string,quantity:numb
 class StripeFailure extends AppError{constructor(public remoteStatus:number,public remoteCode:string){super('The payment service could not complete this request. Your bag is saved.',502)}}
 async function stripe(path:string,form?:URLSearchParams,idempotency?:string){const key=config('STRIPE_SECRET_KEY');if(!key)throw new AppError('Secure payment is not configured yet.',503);const response=await fetch('https://api.stripe.com/v1/'+path,{method:form?'POST':'GET',headers:{Authorization:'Bearer '+key,...(form?{'Content-Type':'application/x-www-form-urlencoded'}:{}),...(idempotency?{'Idempotency-Key':idempotency}:{})},body:form});const data=await response.json() as any;if(!response.ok)throw new StripeFailure(response.status,data.error?.code||data.error?.type||'unknown');return data}
 export async function confirmAttempt(attemptId:string,demo=false){
- const a=await one('SELECT * FROM checkout_attempts WHERE id=?',attemptId);if(!a||Boolean(a.demo)!==demo)throw new AppError('Payment could not be verified.',400);if(a.status==='released')throw new AppError('This checkout has expired.',409);
+ const a=await one('SELECT * FROM checkout_attempts WHERE id=?',attemptId);if(!a||Boolean(a.demo)!==demo)throw new AppError('Payment could not be verified.',400);if(a.payment_method==='cod')throw new AppError('Cash-on-delivery orders cannot be confirmed by a card payment.',409);if(a.status==='released')throw new AppError('This checkout has expired.',409);
  const id='DTI-'+a.id,body=(demo?'DEMO ORDER — no payment taken and no shipment will be made.\n\n':'Thank you for your order.\n\n')+'Order: '+id+'\nTotal: '+money(a.total,a.currency)+'\nShipping address: '+a.address;
  await db().batch([
  stmt("UPDATE checkout_attempts SET status='paid' WHERE id=? AND status='reserved'",a.id),
@@ -34,17 +35,19 @@ export async function startCheckout(s:any,body:any){
  const store=await getStore();const live=store.settings.liveSales;if(!live&&body.confirmDemo!==true)throw new AppError('Please acknowledge that this is a demo checkout.');const existing=await one('SELECT * FROM checkout_attempts WHERE session_id=? AND request_key=?',s.id,body.requestKey);
  let a=existing;
  if(existing&&existing.user_id&&existing.user_id!==s.user_id)throw new AppError('Checkout not found.',404);
- if(existing){if(existing.status==='paid'){const order=await one('SELECT id FROM orders WHERE attempt_id=?',existing.id);return {url:'/order/'+order.id}}if(existing.status!=='reserved')throw new AppError('This checkout expired. Return to your bag and start again.');if(existing.address!==JSON.stringify(address))throw new AppError('Your checkout details changed. Return to your bag and start again.')}
+ if(existing){if(['paid','cod_confirmed','cod_cancelled'].includes(existing.status)){const order=await one('SELECT id FROM orders WHERE attempt_id=?',existing.id);return {url:'/order/'+order.id}}if(existing.status!=='reserved')throw new AppError('This checkout expired. Return to your bag and start again.');if(existing.address!==JSON.stringify(address))throw new AppError('Your checkout details changed. Return to your bag and start again.')}
  if(!a){
  const lines=await getCart(s.id);if(!lines.length)throw new AppError('Your bag is empty.');if(lines.length>30)throw new AppError('Please keep your bag to 30 items or fewer.');
  if(lines.some(l=>!l.published||l.quantity>l.stock))throw new AppError('An item in your bag is no longer available in that quantity.');
  if(live&&lines.some(l=>l.demo))throw new AppError('Demo products cannot be purchased. Please remove them from your bag.');
- if(live&&(!config('STRIPE_SECRET_KEY')||!config('STRIPE_WEBHOOK_SECRET')))throw new AppError('Secure payments are not ready yet. Please try again later.',503);
- const countries=store.settings.shippingCountries.split(',').map(x=>x.trim()).filter(Boolean);if(live&&(!countries.length||!countries.includes(address.country)))throw new AppError('Shipping to this country is not available.');
+ if(live&&store.settings.paymentMethod!=='cod'&&(!config('STRIPE_SECRET_KEY')||!config('STRIPE_WEBHOOK_SECRET')))throw new AppError('Secure payments are not ready yet. Please try again later.',503);
+ const countries=store.settings.shippingCountries.split(',').map(x=>x.trim()).filter(Boolean);if((live||store.settings.paymentMethod==='cod')&&(!countries.length||!countries.includes(address.country)))throw new AppError('Shipping to this country is not available.');
+ if(store.settings.paymentMethod==='cod'){if(!address.phone.trim())throw new AppError('Enter a phone number for delivery.');const cities=(store.settings.shippingCities||'').split(',').map(c=>c.trim().toLocaleLowerCase()).filter(Boolean);const city=address.city.trim().toLocaleLowerCase();if(cities.length&&!cities.includes(city)&&!(cities.includes('sousse')&&city==='سوسة'))throw new AppError('Cash on delivery is available in '+store.settings.shippingCities+' only.');}
  const subtotal=lines.reduce((n,l)=>n+l.quantity*l.price,0),shipping=store.settings.shippingFee,tax=Math.round((subtotal+shipping)*store.settings.taxRate/100),id=uid(),expires=Math.floor(Date.now()/1000)+2100;
- try{await db().batch([stmt('INSERT INTO checkout_attempts (id,request_key,session_id,user_id,email,name,address,subtotal,shipping,tax,total,currency,demo,expires) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',id,body.requestKey,s.id,s.user_id??null,address.email,address.name,JSON.stringify(address),subtotal,shipping,tax,subtotal+shipping+tax,store.settings.currency,live?0:1,expires),...lines.map(l=>stmt('INSERT INTO checkout_items (id,attempt_id,variant_id,quantity,price,snapshot) VALUES (?,?,?,?,?,?)',uid(),id,l.variantId,l.quantity,l.price,JSON.stringify({name:l.name,size:l.size,color:l.color,image:l.image,slug:l.slug})))]);}catch(error){console.error('Stock reservation failed');throw new AppError('Stock changed while you were checking out. Refresh your bag and try again.',409)}
+ try{await db().batch([stmt('INSERT INTO checkout_attempts (id,request_key,session_id,user_id,email,name,address,subtotal,shipping,tax,total,currency,demo,expires,payment_method) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',id,body.requestKey,s.id,s.user_id??null,address.email,address.name,JSON.stringify(address),subtotal,shipping,tax,subtotal+shipping+tax,store.settings.currency,live?0:1,expires,store.settings.paymentMethod||'stripe'),...lines.map(l=>stmt('INSERT INTO checkout_items (id,attempt_id,variant_id,quantity,price,snapshot) VALUES (?,?,?,?,?,?)',uid(),id,l.variantId,l.quantity,l.price,JSON.stringify({name:l.name,size:l.size,color:l.color,image:l.image,slug:l.slug})))]);}catch(error){console.error('Stock reservation failed');throw new AppError('Stock changed while you were checking out. Refresh your bag and try again.',409)}
  a=await one('SELECT * FROM checkout_attempts WHERE id=?',id);
  }
+ if(a.payment_method==='cod'){if(a.demo&&body.confirmDemo!==true)throw new AppError('Please acknowledge that this is a test order.');return {url:'/order/'+await confirmCod(a.id)}}
  if(a.demo){if(body.confirmDemo!==true)throw new AppError('Please acknowledge that this is a demo checkout.');const orderId=await confirmAttempt(a.id,true);return{url:'/order/'+orderId}}
  if(a.stripe_url)return {url:a.stripe_url};
  if(Math.floor(Date.now()/1000)>a.expires+22*3600)throw new AppError('This checkout needs owner review. A second payment session will not be created.',409);
@@ -54,7 +57,7 @@ export async function startCheckout(s:any,body:any){
  if(a.stripe_params)form=new URLSearchParams(a.stripe_params);else await run('UPDATE checkout_attempts SET stripe_params=? WHERE id=? AND stripe_params IS NULL',form.toString(),a.id);
  let session:any;try{session=await stripe('checkout/sessions',form,'dti-checkout-'+a.id)}catch(e){if(e instanceof StripeFailure&&e.remoteStatus===400&&e.remoteCode!=='idempotency_key_in_use')await run("UPDATE checkout_attempts SET status='released' WHERE id=? AND status='reserved'",a.id);throw e}await run('UPDATE checkout_attempts SET stripe_id=?,stripe_url=? WHERE id=?',session.id,session.url,a.id);return{url:session.url};
 }
-async function reconcileSession(remote:any){const a=await one('SELECT * FROM checkout_attempts WHERE id=?',remote.metadata?.attempt_id??'');if(!a||a.demo||remote.mode!=='payment'||(a.stripe_id&&a.stripe_id!==remote.id))throw new AppError('Unrecognized payment session.');
+async function reconcileSession(remote:any){const a=await one('SELECT * FROM checkout_attempts WHERE id=?',remote.metadata?.attempt_id??'');if(!a||a.demo||a.payment_method==='cod'||remote.mode!=='payment'||(a.stripe_id&&a.stripe_id!==remote.id))throw new AppError('Unrecognized payment session.');
  if(remote.currency!==a.currency.toLowerCase()||remote.amount_total!==a.total)throw new AppError('Payment amount mismatch.');
  const liveKey=config('STRIPE_SECRET_KEY').startsWith('sk_live_');if(Boolean(remote.livemode)!==liveKey)throw new AppError('Payment environment mismatch.');
  if(!a.stripe_id)await run('UPDATE checkout_attempts SET stripe_id=? WHERE id=?',remote.id,a.id);

@@ -38,6 +38,7 @@ const factory=vm.runInNewContext('(function(require,module,exports){'+code+'\n})
 factory(name=>{
  if(name==='server-only')return {};
  if(name==='./types')return moneyTypes;
+ if(name==='./cod')return {};
  if(name==='node:crypto')return crypto;
  if(name==='./db')return db;
  if(name==='./auth')return {AppError,sendPendingEmails:async()=>{}};
