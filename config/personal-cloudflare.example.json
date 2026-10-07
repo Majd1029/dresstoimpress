@@ -4,6 +4,7 @@
   "accountId": "",
   "databaseId": "",
   "mediaStorage": "d1",
+  "siteVisibility": "private",
   "appUrl": "",
   "freePlanVerified": false,
   "sourceDataVerified": false

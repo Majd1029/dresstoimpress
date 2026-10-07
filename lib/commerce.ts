@@ -28,6 +28,7 @@ export async function confirmAttempt(attemptId:string,demo=false){
  await sendPendingEmails();return id;
 }
 export async function startCheckout(s:any,body:any){
+ if(!s?.user_id)throw new AppError('Create an account or sign in before placing an order.',401);
  const address=addressSchema.parse(body.address);if(typeof body.requestKey!=='string'||body.requestKey.length<16||body.requestKey.length>100)throw new AppError('Please refresh checkout and try again.');
  const store=await getStore();const live=store.settings.liveSales;if(!live&&body.confirmDemo!==true)throw new AppError('Please acknowledge that this is a demo checkout.');const existing=await one('SELECT * FROM checkout_attempts WHERE session_id=? AND request_key=?',s.id,body.requestKey);
  let a=existing;

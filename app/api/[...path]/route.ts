@@ -32,7 +32,7 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}){
  const ip=req.headers.get('cf-connecting-ip')??'local';await limit('auth-ip:'+hash(ip),40,900000);
  if(action==='auth/logout'){await run('DELETE FROM sessions WHERE id=?',s.id);return json({ok:true},200,cookie('',req,0))}
  if(action==='auth/register'||action==='auth/login'||action==='auth/setup'){
- const e=email.parse(b.email),pw=password.parse(b.password);await limit('auth-account:'+hash(e),10,900000);let u=await one('SELECT * FROM users WHERE email=?',e);
+ const e=email.parse(b.email),pw=(action==='auth/login'?z.string().min(1).max(128):password).parse(b.password);await limit('auth-account:'+hash(e),10,900000);let u=await one('SELECT * FROM users WHERE email=?',e);
  if(action==='auth/login'){const dummy='scrypt:32768:8:3:00000000000000000000000000000000:'+('00'.repeat(32));if(!await verifyPassword(pw,u?.password_hash??dummy)||!u)throw new AppError('The email or password is incorrect.',401)}
  else{
  if(action==='auth/setup'){const setup=config('ADMIN_SETUP_TOKEN');if(!setup||typeof b.setupToken!=='string'||hash(b.setupToken)!==hash(setup))throw new AppError('A valid owner setup token is required.',403);if(await one('SELECT user_id FROM admins LIMIT 1'))throw new AppError('An administrator already exists. Sign in instead.',409)}

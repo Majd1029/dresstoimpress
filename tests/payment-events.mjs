@@ -39,6 +39,10 @@ factory(name=>{
  throw new Error('Unexpected dependency '+name);
 },module,module.exports);
 
+await assert.rejects(module.exports.startCheckout({id:'session',user_id:null},{}),error=>error.status===401);
+assert.equal(sql.prepare('SELECT count(*) count FROM checkout_attempts').get().count,0);
+console.log('PASS Guest checkout is rejected before creating a checkout attempt');
+
 function attempt(id,{amount=1000,payment='paid',stripeId=true}={}){
  sql.prepare("INSERT INTO checkout_attempts(id,request_key,session_id,email,name,address,subtotal,shipping,tax,total,currency,demo,expires,stripe_id) VALUES(?,?,'session','qa@example.test','QA','{}',1000,0,0,1000,'USD',0,9999999999,?)").run(id,id,stripeId?'cs_'+id:null);
  const session={id:'cs_'+id,metadata:{attempt_id:id},mode:'payment',livemode:false,currency:'usd',amount_total:amount,payment_status:payment,status:'complete'};

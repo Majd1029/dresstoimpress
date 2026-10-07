@@ -1,6 +1,6 @@
 # Personal deployment checklist — 2026-10-05
 
-The store now runs privately at https://dresstoimpress.majdaguir29.workers.dev under the personal Cloudflare identity **majdaguir29@gmail.com**. Source of truth: https://github.com/Majd1029/dresstoimpress (public).
+The store now runs publicly at https://dresstoimpress.majdaguir29.workers.dev under the personal Cloudflare identity **majdaguir29@gmail.com**. Source of truth: https://github.com/Majd1029/dresstoimpress (public).
 
 ## Completed
 
@@ -18,14 +18,14 @@ The store now runs privately at https://dresstoimpress.majdaguir29.workers.dev u
 
 - **PERSONAL LOGIN — Cloudflare:** sign in as majdaguir29@gmail.com. Verify this identity before changing the Worker, D1, members, recovery methods or API tokens.
 - **PERSONAL LOGIN — GitHub:** sign in as Majd1029. The public repo grants everyone read access, but should grant no company collaborator write/admin access.
-- Preview and admin credentials are in the ignored local `.migration/personal-access.md`. Store them in a personal password manager. They are not in GitHub.
+- Admin credentials are in the ignored local `.migration/personal-access.md`. Store them in a personal password manager. They are not in GitHub.
 - GitHub Actions validates pushes and pull requests. Deployment remains an explicit local `npm run build` then `npm run deploy:personal`, using verified personal OAuth and ignored `config/personal-cloudflare.json`. No company deployment integration remains in the workflow. No Cloudflare OAuth refresh token has been copied into GitHub.
-- The deploy helper preserves private access. Opening the storefront publicly is a separate visibility change; admin authentication remains required.
+- The deploy helper reads siteVisibility from the personal config. The current deployment is public; customers must sign in to order and admin authentication remains required.
 - No payment/email provider is configured. Checkout remains demo-only. Free quotas may interrupt service when exhausted; no paid fallback is enabled. Live checks are not a high-load performance certification.
 
 ## Remaining owner actions
 
-- [ ] Open the new private storefront and administrator dashboard using the local access file.
+- [ ] Open the public storefront; use the local access file for administrator sign-in.
 - [ ] Review personal account members, recovery email/phone, MFA and GitHub collaborators/deploy keys. Remove any work-managed identity or device access you do not want.
 - [ ] Keep the private source backups and verification reports in storage you personally own. This checkout is inside OneDrive; confirm that OneDrive account is personal before retaining credentials/backups there.
 - [ ] Follow the separate private retirement checklist to delete the old Site and confirm removal of its managed repository, D1/R2 resources, secrets and retained access. Deletion has not been performed.

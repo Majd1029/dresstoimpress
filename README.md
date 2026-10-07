@@ -1,6 +1,6 @@
 # Dress to Impress
 
-An editorial fashion store with a database-backed catalog, customer accounts, guest checkout, protected owner dashboard, cloud image uploads, and a Stripe-hosted payment integration.
+An editorial fashion store with a database-backed catalog, customer accounts, account-required checkout, protected owner dashboard, cloud image uploads, and a Stripe-hosted payment integration.
 
 The initial collection is explicitly **demo content**. Instagram could not be accessed, so the ivory, ink and oxblood design is a proposed direction, not a claim about the brand's actual aesthetic. No real prices, store locations, reviews, shipping promises or contact details were invented.
 
@@ -17,7 +17,7 @@ The initial collection is explicitly **demo content**. Instagram could not be ac
 
 ## Technology and project layout
 
-The application uses TypeScript, React, Next.js App Router APIs through the Vinext Cloudflare adapter, Tailwind CSS, Drizzle, Cloudflare D1 and a private SQLite-backed Durable Object for password hashing. The backend runs in the owner's personal Cloudflare Free account at https://dresstoimpress.majdaguir29.workers.dev in private preview. Data migration is verified; old-resource retirement is pending. It uses relational SQLite rather than PostgreSQL. Vinext is a pre-1.0 adapter; run deployment/load checks for the intended production environment before accepting real payments.
+The application uses TypeScript, React, Next.js App Router APIs through the Vinext Cloudflare adapter, Tailwind CSS, Drizzle, Cloudflare D1 and a private SQLite-backed Durable Object for password hashing. The backend runs in the owner's personal Cloudflare Free account at https://dresstoimpress.majdaguir29.workers.dev with public browsing and account-required checkout. Data migration is verified; old-resource retirement is pending. It uses relational SQLite rather than PostgreSQL. Vinext is a pre-1.0 adapter; run deployment/load checks for the intended production environment before accepting real payments.
 
 ```text
 app/                     Server-rendered routes, metadata, API, error boundaries
