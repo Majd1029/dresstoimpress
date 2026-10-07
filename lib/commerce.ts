@@ -1,3 +1,4 @@
+import {money} from './types';
 import 'server-only';
 import {createHmac,timingSafeEqual} from 'node:crypto';
 import {all,one,run,stmt,db,uid,config,getStore} from './db';
@@ -17,7 +18,7 @@ class StripeFailure extends AppError{constructor(public remoteStatus:number,publ
 async function stripe(path:string,form?:URLSearchParams,idempotency?:string){const key=config('STRIPE_SECRET_KEY');if(!key)throw new AppError('Secure payment is not configured yet.',503);const response=await fetch('https://api.stripe.com/v1/'+path,{method:form?'POST':'GET',headers:{Authorization:'Bearer '+key,...(form?{'Content-Type':'application/x-www-form-urlencoded'}:{}),...(idempotency?{'Idempotency-Key':idempotency}:{})},body:form});const data=await response.json() as any;if(!response.ok)throw new StripeFailure(response.status,data.error?.code||data.error?.type||'unknown');return data}
 export async function confirmAttempt(attemptId:string,demo=false){
  const a=await one('SELECT * FROM checkout_attempts WHERE id=?',attemptId);if(!a||Boolean(a.demo)!==demo)throw new AppError('Payment could not be verified.',400);if(a.status==='released')throw new AppError('This checkout has expired.',409);
- const id='DTI-'+a.id,body=(demo?'DEMO ORDER — no payment taken and no shipment will be made.\n\n':'Thank you for your order.\n\n')+'Order: '+id+'\nTotal: '+(a.total/100).toFixed(2)+' '+a.currency+'\nShipping address: '+a.address;
+ const id='DTI-'+a.id,body=(demo?'DEMO ORDER — no payment taken and no shipment will be made.\n\n':'Thank you for your order.\n\n')+'Order: '+id+'\nTotal: '+money(a.total,a.currency)+'\nShipping address: '+a.address;
  await db().batch([
  stmt("UPDATE checkout_attempts SET status='paid' WHERE id=? AND status='reserved'",a.id),
  stmt("INSERT OR IGNORE INTO orders (id,attempt_id,user_id,session_id,email,name,address,subtotal,shipping,tax,total,currency,status,payment_status,demo) SELECT ?,id,user_id,session_id,email,name,address,subtotal,shipping,tax,total,currency,'paid',?,demo FROM checkout_attempts WHERE id=? AND status='paid'",id,demo?'demo':'paid',a.id),

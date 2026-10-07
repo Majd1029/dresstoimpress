@@ -7,5 +7,6 @@ export type Homepage={heroImage:string;heading:string;description:string;ctaText
 export type StoreData={products:Product[];categories:Category[];settings:Settings;home:Homepage};
 export type Viewer={id:string;name:string;email:string;role:string}|null;
 export type CartLine={id:string;variantId:string;quantity:number;productId:string;name:string;slug:string;image:string;size:string;color:string;price:number;stock:number;published:number;demo:number};
-export const money=(amount:number,currency='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency}).format(amount/100);
+export const currencyFactor=(currency:string)=>currency==='TND'?1000:100;
+export const money=(amount:number,currency='TND')=>new Intl.NumberFormat('en-US',{style:'currency',currency}).format(amount/currencyFactor(currency));
 

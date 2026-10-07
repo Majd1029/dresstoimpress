@@ -7,6 +7,11 @@ import * as crypto from 'node:crypto';
 import vm from 'node:vm';
 import ts from 'typescript';
 import assert from 'node:assert/strict';
+import * as moneyTypes from '../lib/types.ts';
+
+assert.equal(moneyTypes.money(98125,'TND').replace(/\s/g,''),'TND98.125');
+assert.equal(moneyTypes.money(9800,'USD'),'$98.00');
+assert.equal(moneyTypes.currencyFactor('TND'),1000);
 
 const sql=new DatabaseSync(':memory:');
 for(const file of ['0000_futuristic_silk_fever.sql','0001_silky_mastermind.sql'])sql.exec(readFileSync(new URL('../drizzle/'+file,import.meta.url),'utf8'));
@@ -32,6 +37,7 @@ const factory=vm.runInNewContext('(function(require,module,exports){'+code+'\n})
 });
 factory(name=>{
  if(name==='server-only')return {};
+ if(name==='./types')return moneyTypes;
  if(name==='node:crypto')return crypto;
  if(name==='./db')return db;
  if(name==='./auth')return {AppError,sendPendingEmails:async()=>{}};
