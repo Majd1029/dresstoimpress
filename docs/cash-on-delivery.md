@@ -1,6 +1,6 @@
 # Cash on delivery
 
-The configured payment method is cash on delivery (COD), in Tunisian dinars. Delivery is available throughout Tunisia, with a delivery fee of TND 0.000, as requested by the owner.
+The configured payment method is cash on delivery (COD), in Tunisian dinars. Delivery is available throughout Tunisia, with a delivery fee of TND 8.000, as requested by the owner.
 
 Customers can browse publicly but must sign in to order. COD requires a delivery address and phone number. The server checks the delivery country/city and calculates all prices and totals; no card details or Stripe request is involved.
 
