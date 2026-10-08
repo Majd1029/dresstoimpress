@@ -1,6 +1,6 @@
 # Personal deployment checklist — 2026-10-05
 
-The store now runs publicly at https://dresstoimpress.majdaguir29.workers.dev under the personal Cloudflare identity **majdaguir29@gmail.com**. Source of truth: https://github.com/Majd1029/dresstoimpress (public).
+The store now runs publicly at https://dresstoimpress.dress-to-impress.workers.dev under the personal Cloudflare identity **majdaguir29@gmail.com**. Source of truth: https://github.com/Majd1029/dresstoimpress (public).
 
 ## Completed
 

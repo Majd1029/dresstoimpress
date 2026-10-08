@@ -17,7 +17,7 @@ The initial collection is explicitly **demo content**. Instagram could not be ac
 
 ## Technology and project layout
 
-The application uses TypeScript, React, Next.js App Router APIs through the Vinext Cloudflare adapter, Tailwind CSS, Drizzle, Cloudflare D1 and a private SQLite-backed Durable Object for password hashing. The backend runs in the owner's personal Cloudflare Free account at https://dresstoimpress.majdaguir29.workers.dev with public browsing and account-required checkout. Data migration is verified; old-resource retirement is pending. It uses relational SQLite rather than PostgreSQL. Vinext is a pre-1.0 adapter; run deployment/load checks for the intended production environment before accepting real payments.
+The application uses TypeScript, React, Next.js App Router APIs through the Vinext Cloudflare adapter, Tailwind CSS, Drizzle, Cloudflare D1 and a private SQLite-backed Durable Object for password hashing. The backend runs in the owner's personal Cloudflare Free account at https://dresstoimpress.dress-to-impress.workers.dev with public browsing and account-required checkout. Data migration is verified; old-resource retirement is pending. It uses relational SQLite rather than PostgreSQL. Vinext is a pre-1.0 adapter; run deployment/load checks for the intended production environment before accepting real payments.
 
 ```text
 app/                     Server-rendered routes, metadata, API, error boundaries
